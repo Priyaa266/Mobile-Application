@@ -1,0 +1,74 @@
+
+package com.example.exno6;
+
+import android.media.MediaPlayer;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.ImageView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    ImageView img;
+    Button btn;
+    MediaPlayer mediaPlayer;
+
+    int[] images = {
+            R.drawable.img1,
+            R.drawable.img2,
+            R.drawable.img7,
+            R.drawable.img4,
+            R.drawable.img5,
+            R.drawable.img6,
+            R.drawable.img8,
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        img = findViewById(R.id.imageView);
+        btn = findViewById(R.id.button);
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.aud);
+
+        btn.setOnClickListener(v -> {
+
+            // 🔹 Thread 1 → Play Music
+            new Thread(() -> {
+                mediaPlayer.start();
+            }).start();
+
+            // 🔹 Thread 2 → Change Images
+            new Thread(() -> {
+
+                for (int i = 0; i < images.length; i++) {
+
+                    int index = i;
+
+                    runOnUiThread(() ->
+                            img.setImageResource(images[index])
+                    );
+
+                    try {
+                        Thread.sleep(2000); // 2 seconds per image
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }).start();
+
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+        }
+    }
+}
