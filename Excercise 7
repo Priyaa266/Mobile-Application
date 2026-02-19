@@ -1,0 +1,104 @@
+MapActivity.java
+package com.example.exn07;
+
+import android.os.Bundle;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.exn07.R; // Correct package name
+
+public class MapActivity extends AppCompatActivity {
+
+    WebView web;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_map);
+
+        web = findViewById(R.id.web_view);
+
+        // Enable WebView settings
+        WebSettings webSettings = web.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+
+        // Open links inside WebView
+        web.setWebViewClient(new WebViewClient());
+
+        // Get data from Intent
+        Bundle bun = getIntent().getExtras();
+
+        if (bun != null) {
+            String lat = bun.getString("lat");
+            String lon = bun.getString("lon");
+
+            if (lat != null && lon != null) {
+                String url = "https://www.google.com/maps?q=" + lat + "," + lon;
+                web.loadUrl(url);
+            } else {
+                web.loadUrl("https://www.google.com/maps");
+            }
+        } else {
+            web.loadUrl("https://www.google.com/maps");
+        }
+    }
+}
+MainActivity.java
+package com.example.exn07; // Make sure this matches your project package
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.exn07.R;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText etLatitude, etLongitude;
+    Button btnSend;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        etLatitude = findViewById(R.id.etLatitude);
+        etLongitude = findViewById(R.id.etLongitude);
+        btnSend = findViewById(R.id.btnSend);
+
+        btnSend.setOnClickListener(view -> {
+
+            String lat = etLatitude.getText().toString().trim();
+            String lon = etLongitude.getText().toString().trim();
+
+            if (lat.isEmpty() || lon.isEmpty()) {
+                Toast.makeText(MainActivity.this,
+                        "Please enter both latitude and longitude",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                try {
+                    // Optional: validate numeric input
+                    Double.parseDouble(lat);
+                    Double.parseDouble(lon);
+
+                    Intent intent = new Intent(MainActivity.this, MapActivity.class);
+                    intent.putExtra("lat", lat);
+                    intent.putExtra("lon", lon);
+                    startActivity(intent);
+
+                } catch (NumberFormatException e) {
+                    Toast.makeText(MainActivity.this,
+                            "Enter valid numeric latitude and longitude",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+}
